@@ -1,2 +1,2 @@
-## OpenGL sources from LearnOpenGL
+## Model viewer
 Source: https://learnopengl.com/

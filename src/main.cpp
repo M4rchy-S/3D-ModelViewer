@@ -32,6 +32,10 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
+float backgroundColor[4] = {0.05f, 0.05f, 0.05f, 1.0f};
+float lightPos[3] = {-2.0f, 0.0f, 0.0f};
+float lightColor[3] = {1.0f, 1.0f, 1.0f};
+
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -95,7 +99,7 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader ourShader("1.model_loading.vs", "1.model_loading.fs");
+    Shader ourShader("phong_light.vs", "phong_light.fs");
 
     // load models
     // -----------
@@ -121,7 +125,19 @@ int main()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGui::ShowDemoWindow(); // Show demo window! :)
+        // ImGui::ShowDemoWindow(); // Show demo window! :)
+
+        ImGui::Text("World Properties");
+        ImGui::ColorEdit3("Background Color", backgroundColor);
+
+        ImGui::Text("Light Properties");
+        ImGui::DragFloat3("Light Position", lightPos, 0.025f);
+        ImGui::ColorEdit3("Light Color", lightColor);
+
+        ImGui::Text("Model Properties");
+        ImGui::DragFloat3("Model Position", ourModel.getPositionPointer(), 0.015f);
+        ImGui::DragFloat3("Model Scale", ourModel.getScalePointer(), 0.01f);
+        ImGui::DragFloat3("Model Rotation", ourModel.getRotationPointer(), 0.01f);
 
         // input
         // -----
@@ -129,7 +145,7 @@ int main()
 
         // render
         // ------
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // don't forget to enable shader before setting uniforms
@@ -140,17 +156,12 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
-
-        // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-        ourShader.setMat4("model", model);
+        ourShader.setMat4("model", ourModel.getModelMatrix());
 
         //  light properties
-        ourShader.setVec3("lightPos", glm::vec3(-2.0f, 0.0f, 0.0f));
+        ourShader.setVec3("lightPos", lightPos[0], lightPos[1], lightPos[2]);
         ourShader.setVec3("viewPos", camera.Position);
-        ourShader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+        ourShader.setVec3("lightColor", lightColor[0], lightColor[1], lightColor[2]);
 
         ourModel.Draw(ourShader);
 
@@ -158,8 +169,6 @@ int main()
         // (Your code clears your framebuffer, renders your other stuff etc.)
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        // (Your code calls glfwSwapBuffers() etc.)
-
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -191,6 +200,10 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera.ProcessKeyboard(WORLD_UP, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        camera.ProcessKeyboard(WORLD_DOWN, deltaTime);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -206,6 +219,15 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
+    int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
+    if (state != GLFW_PRESS) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        firstMouse = true;
+        return;
+    }
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 

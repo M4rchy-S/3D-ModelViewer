@@ -10,13 +10,15 @@ enum Camera_Movement {
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    WORLD_UP,
+    WORLD_DOWN
 };
 
 // Default camera values
 const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
-const float SPEED       =  2.5f;
+const float SPEED       =  5.0f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
 
@@ -31,6 +33,7 @@ public:
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
+    glm::vec3 WorldDown;
     // euler Angles
     float Yaw;
     float Pitch;
@@ -44,6 +47,7 @@ public:
     {
         Position = position;
         WorldUp = up;
+        WorldDown = -up;
         Yaw = yaw;
         Pitch = pitch;
         updateCameraVectors();
@@ -76,6 +80,11 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+        if (direction == WORLD_UP)
+            Position += WorldUp * velocity;
+        if (direction == WORLD_DOWN)
+            Position += WorldDown * velocity;
+
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.

@@ -31,6 +31,9 @@ public:
     vector<Mesh>    meshes;
     string directory;
     bool gammaCorrection;
+    float position[3] = {0.0f, 0.0f, 0.0f};
+    float scale[3] = {1.0f, 1.0f, 1.0f};
+    float rotation[3] = {0.0f, 0.0f, 0.0f};
 
     // constructor, expects a filepath to a 3D model.
     Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
@@ -43,6 +46,30 @@ public:
     {
         for(unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader);
+    }
+
+    glm::mat4 getModelMatrix() const {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(position[0], position[1], position[2]));
+        model = glm::scale(model, glm::vec3(scale[0], scale[1], scale[2]));
+
+        model = glm::rotate(model, rotation[0], glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, rotation[1], glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, rotation[2], glm::vec3(0.0f, 0.0f, 1.0f));
+
+        return model;
+    }
+
+    float *getPositionPointer() {
+        return position;
+    }
+
+    float *getScalePointer() {
+        return scale;
+    }
+
+    float *getRotationPointer() {
+        return rotation;
     }
 
 private:

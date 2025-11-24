@@ -18,7 +18,7 @@ Mouse Middle Button - View Rotation
 
 ## Download
 
-Navigate to Releases Page
+Navigate to <a href="https://github.com/M4rchy-S/3D-ModelViewer/releases">Releases Page</a>
 
 
 
